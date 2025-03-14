@@ -1,0 +1,25 @@
+{
+  "name": "raku-web-repl",
+  "description": "Write me!",
+  "version": "0.1",
+  "perl": "6.*",
+  "authors": [
+    "Write me!"
+  ],
+  "auth": "Write me!",
+  "depends": [
+    "Cro::HTTP",
+    "Cro::WebSocket",
+    "Cro::WebApp"
+  ],
+  "build-depends": [],
+  "test-depends": [
+    "Cro::HTTP::Test"
+  ],
+  "provides": {
+    "Routes": "lib/Routes.rakumod"
+  },
+  "resources": [],
+  "license": "Write me!",
+  "source-url": "Write me!"
+}

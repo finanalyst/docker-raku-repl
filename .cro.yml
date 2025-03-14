@@ -1,0 +1,15 @@
+---
+id: "raku-web-repl"
+cro: 1
+name: "raku-web-repl"
+endpoints:
+  -
+    id: http
+    name: HTTP
+    protocol: http
+    host-env: RAKU_WEB_REPL_HOST
+    port-env: RAKU_WEB_REPL_PORT
+links:  []
+entrypoint: service.p6
+env:  []
+...

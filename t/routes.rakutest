@@ -1,0 +1,11 @@
+use Cro::HTTP::Test;
+use Test;
+use raku-web-repl::Routes;
+
+test-service routes, {
+    test get('/'),
+            status => 200,
+            body-text => '<h1> raku-web-repl </h1>';
+}
+
+done-testing;
