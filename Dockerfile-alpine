@@ -1,37 +1,46 @@
-FROM alpine:3.20
+FROM alpine:latest
+
+ARG RAKU_RELEASE=2025.02
+
+ENV PKGS="git make gcc musl-dev perl linux-headers bash openssl-dev"
+ENV RAKULIB="inst#/home/raku/.raku"
+
+RUN apk update && apk upgrade \
+    && apk add --no-cache $PKGS \
+    && git clone --depth 1 --branch ${RAKU_RELEASE} https://github.com/MoarVM/MoarVM.git \
+    && cd MoarVM \
+    && perl Configure.pl --prefix /usr \
+    && make install\
+    && cd .. \
+    && git clone --depth 1 --branch ${RAKU_RELEASE} https://github.com/Raku/nqp.git \
+    && cd nqp \
+    && perl Configure.pl --backends=moar --prefix /usr \
+    && make install \
+    && cd .. \
+    && git clone --depth 1 --branch ${RAKU_RELEASE} https://github.com/rakudo/rakudo.git \
+    && cd rakudo \
+    && perl Configure.pl --backends=moar --prefix /usr \
+    && make install
 
 ENV PATH="/usr/share/perl6/site/bin:$PATH"
 
- ARG rakudo=main
+ARG getopt=0.4.2
+ARG prove6=0.0.17
+ARG tap=0.3.14
+ARG zef=v0.22.5
 
- # Leave git installed for zef.
- RUN apk add --no-cache gcc git linux-headers make musl-dev perl openssl-dev
- RUN git clone -b $rakudo https://github.com/rakudo/rakudo       \
-  && cd rakudo                                                   \
-  && CFLAGS=-flto ./Configure.pl                                 \
-     --gen-moar                                                  \
-     --moar-option=--ar=gcc-ar                                   \
-     --prefix=/usr                                               \
-  && make install                                                \
-  && strip /usr/lib/libmoar.so                                   \
-  && cd /                                                        \
-  && rm -rf rakudo
+RUN git clone -b $zef https://github.com/ugexe/zef        \
+ && perl6 -Izef/lib zef/bin/zef --/test install ./zef     \
+    $([ -z $getopt ] || echo "Getopt::Long:ver<$getopt>") \
+    $([ -z $prove6 ] || echo "App::Prove6:ver<$prove6>" ) \
+    $([ -z $tap    ] || echo "TAP:ver<$tap>"            ) \
+ && rm -rf zef
 
- ARG getopt=0.4.2
- ARG prove6=0.0.17
- ARG tap=0.3.14
- ARG zef=v0.22.5
-
- RUN git clone -b $zef https://github.com/ugexe/zef        \
-  && perl6 -Izef/lib zef/bin/zef --/test install ./zef     \
-     $([ -z $getopt ] || echo "Getopt::Long:ver<$getopt>") \
-     $([ -z $prove6 ] || echo "App::Prove6:ver<$prove6>" ) \
-     $([ -z $tap    ] || echo "TAP:ver<$tap>"            ) \
-  && rm -rf zef
-
+# install CRO
 RUN zef install 'Cro::Core'
 RUN zef install --/test 'Cro::HTTP'
 RUN zef install --/test 'Cro::WebSocket'
+RUN zef install --/test 'DateTime::strftime'
 
 # remove unneeded dependents
 RUN apk del gcc linux-headers make musl-dev perl
